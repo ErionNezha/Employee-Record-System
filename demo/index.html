@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<!-- Created by Erion Nezha — © 2026 All rights reserved -->
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistemi i Regjistrimit të Punonjësve — Demo Live</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e14;color:#e6e6e6;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:18px 12px}
+h1{font-size:1.45rem;margin-bottom:6px;color:#ffb020}
+.sub{color:#9fb3c8;font-size:.9rem;max-width:760px;text-align:center;line-height:1.6;margin-bottom:10px}
+.sim{background:#ffb02022;border:1px solid #ffb02066;color:#ffd88a;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:.85rem;max-width:760px;line-height:1.6;text-align:center}
+.wrap{width:100%;max-width:900px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+button{background:#1b263b;color:#e6e6e6;border:1px solid #ffffff22;padding:10px 20px;border-radius:8px;font-size:.9rem;cursor:pointer;font-weight:600}
+button:hover{background:#24344d}
+button.primary{background:#ffb020;color:#1a1206;border-color:#ffb020}
+button.primary:hover{background:#ffc14d}
+button.danger{background:#7a1f1f;border-color:#a33}
+.panel{background:#0d1420;border:1px solid #ffffff14;border-radius:10px;padding:16px;margin-bottom:14px;display:none}
+.panel.open{display:block}
+.panel h2{font-size:1.05rem;margin-bottom:12px;color:#7fdbff}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:.82rem;color:#9fb3c8;display:block;margin-bottom:4px}
+input,select{width:100%;padding:9px 10px;border-radius:6px;border:1px solid #ffffff22;background:#111a26;color:#e6e6e6;font-size:.9rem}
+.formgrid .full{grid-column:1/-1}
+.msg{margin-top:10px;font-size:.88rem;min-height:1.4em}
+.msg.ok{color:#7dff9e}.msg.err{color:#ff8f8f}
+table{width:100%;border-collapse:collapse;font-size:.88rem;background:#0d1420;border:1px solid #ffffff14;border-radius:10px;overflow:hidden}
+th{background:#1b263b;color:#7fdbff;padding:10px 8px;text-align:left;font-size:.8rem;text-transform:uppercase;letter-spacing:.4px}
+td{padding:9px 8px;border-top:1px solid #ffffff0d;color:#d6deeb}
+tr:hover td{background:#ffffff08}
+.count{color:#5c6b7f;font-size:.82rem;margin:10px 0;text-align:right}
+.empty{text-align:center;color:#5c6b7f;padding:26px;font-size:.9rem}
+footer{margin-top:18px;color:#5c6b7f;font-size:.85rem;text-align:center}
+footer strong{color:#9fb3c8}
+@media(max-width:640px){.formgrid{grid-template-columns:1fr}table{font-size:.78rem}}
+</style>
+</head>
+<body>
+<h1>👥 Sistemi i Regjistrimit të Punonjësve</h1>
+<p class="sub">Version web i sistemit origjinal desktop <b>ers.py</b> (Python + tkinter): shto, fshi dhe kërko
+punonjës — me të njëjtat fusha si origjinali: emri, mbiemri, departamenti dhe pozicioni.</p>
+<div class="sim">⚠️ <b>SIMULIM</b> — kjo demo ekzekutohet plotësisht në browser (të dhënat ruhen në
+<b>localStorage</b>). Origjinali <b>ers.py</b> kërkon <b>Python + tkinter + openpyxl</b> dhe i ruan të dhënat
+në file-in Excel <b>sample.xlsx</b>.</div>
+
+<div class="wrap">
+<div class="toolbar">
+<button class="primary" id="bAdd">➕ Shto punonjës</button>
+<button id="bDel">🗑️ Fshi punonjës</button>
+<button id="bSearch">🔍 Kërko</button>
+<button id="bReset">↺ Rivendos të dhënat</button>
+</div>
+
+<div class="panel" id="pAdd">
+<h2>➕ Shto punonjës të ri</h2>
+<div class="formgrid">
+<div><label>Emri</label><input id="fFirst" placeholder="p.sh. Arben"></div>
+<div><label>Mbiemri</label><input id="fLast" placeholder="p.sh. Hoxha"></div>
+<div><label>Departamenti</label><select id="fDept">
+<option value="">Zgjidh…</option><option>IT</option><option>Operations</option><option>Sales</option>
+</select></div>
+<div><label>Pozicioni</label><select id="fDesig">
+<option value="">Zgjidh…</option><option>Manager</option><option>Asst Manager</option><option>Project Manager</option>
+<option>Team Lead</option><option>Senior Tester</option><option>Junior Tester</option>
+<option>Senior Developer</option><option>Junior Developer</option><option>Intern</option><option>Trainee</option>
+</select></div>
+<div class="full"><button class="primary" id="doAdd" style="width:100%">Ruaje punonjësin</button></div>
+</div>
+<div class="msg" id="mAdd"></div>
+</div>
+
+<div class="panel" id="pDel">
+<h2>🗑️ Fshi punonjës</h2>
+<div class="formgrid">
+<div><label>Emri</label><input id="dFirst" placeholder="Emri i punonjësit"></div>
+<div><label>Mbiemri</label><input id="dLast" placeholder="Mbiemri i punonjësit"></div>
+<div class="full"><button class="danger" id="doDel" style="width:100%">Fshi rekordin</button></div>
+</div>
+<div class="msg" id="mDel"></div>
+</div>
+
+<div class="panel" id="pSearch">
+<h2>🔍 Kërko punonjës</h2>
+<div class="formgrid">
+<div><label>Emri</label><input id="sFirst" placeholder="Emri"></div>
+<div><label>Mbiemri</label><input id="sLast" placeholder="Mbiemri"></div>
+<div class="full"><button id="doSearch" class="primary" style="width:100%">Kërko</button></div>
+</div>
+<div class="msg" id="mSearch"></div>
+</div>
+
+<div class="count" id="count"></div>
+<table>
+<thead><tr><th>ID</th><th>Emri</th><th>Mbiemri</th><th>Departamenti</th><th>Pozicioni</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+
+<footer>Krijuar nga <strong>Erion Nezha</strong> — © 2026</footer>
+<script>
+"use strict";
+/* Të dhënat fillestare — nga sample.xlsx (origjinali) */
+var SEED=[
+ [1,"jiya","kumar","it","trainee"],
+ [2,"shreya","joglekar","it","tester"],
+ [3,"rahul","racha","it","associate"],
+ [4,"bcbvc","vbcbvc","bvcvbc","bvcbvc"],
+ [5,"vbb","bvb","bvbv","bvbv"],
+ [6,"jiji","daniel","it","tester"],
+ [7,"raj","nair","it","tester"],
+ [8,"harry","den","it","senior developer"],
+ [9,"demo","name","sales","intern"]
+];
+var KEY="ers_employees_v1",data=[];
+function load(){try{var s=localStorage.getItem(KEY);if(s){data=JSON.parse(s);return;}}catch(e){}data=SEED.map(function(r){return r.slice();});}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function render(){
+  var tb=document.getElementById("rows"),h="";
+  if(!data.length)h='<tr><td colspan="5" class="empty">Nuk ka punonjës të regjistruar.</td></tr>';
+  data.forEach(function(r){
+    h+="<tr><td>"+esc(r[0])+"</td><td>"+esc(r[1])+"</td><td>"+esc(r[2])+"</td><td>"+esc(r[3])+"</td><td>"+esc(r[4])+"</td></tr>";
+  });
+  tb.innerHTML=h;
+  document.getElementById("count").textContent="Gjithsej: "+data.length+" punonjës";
+}
+function toggle(id){
+  var p=document.getElementById(id),was=p.classList.contains("open");
+  ["pAdd","pDel","pSearch"].forEach(function(x){document.getElementById(x).classList.remove("open");});
+  if(!was)p.classList.add("open");
+}
+function msg(id,txt,ok){var m=document.getElementById(id);m.textContent=txt;m.className="msg "+(ok?"ok":"err");}
+function val(id){return document.getElementById(id).value.trim();}
+function norm(s){return s.toLowerCase();}
+
+document.getElementById("bAdd").onclick=function(){toggle("pAdd");};
+document.getElementById("bDel").onclick=function(){toggle("pDel");};
+document.getElementById("bSearch").onclick=function(){toggle("pSearch");};
+document.getElementById("bReset").onclick=function(){
+  localStorage.removeItem(KEY);load();render();
+  msg("mAdd","",true);
+  alert("Të dhënat u rivendosën nga sample.xlsx.");
+};
+
+document.getElementById("doAdd").onclick=function(){
+  var f=val("fFirst"),l=val("fLast"),d=val("fDept"),g=val("fDesig");
+  if(!f||!l){msg("mAdd","Ju lutem plotësoni emrin dhe mbiemrin.",false);return;}
+  if(!d||!g){msg("mAdd","Ju lutem zgjidhni departamentin dhe pozicionin.",false);return;}
+  var dup=data.some(function(r){return norm(r[1])===norm(f)&&norm(r[2])===norm(l);});
+  if(dup){msg("mAdd","Gabim: ky punonjës ekziston tashmë.",false);return;}
+  var id=data.length?Math.max.apply(null,data.map(function(r){return +r[0]||0;}))+1:1;
+  data.push([id,f,l,d.toLowerCase(),g.toLowerCase()]);
+  save();render();
+  msg("mAdd","✅ Punonjësi u shtua me sukses.",true);
+  document.getElementById("fFirst").value="";document.getElementById("fLast").value="";
+};
+
+document.getElementById("doDel").onclick=function(){
+  var f=val("dFirst"),l=val("dLast");
+  if(!f||!l){msg("mDel","Ju lutem shkruani emrin dhe mbiemrin.",false);return;}
+  var n=data.length;
+  data=data.filter(function(r){return !(norm(r[1])===norm(f)&&norm(r[2])===norm(l));});
+  if(data.length===n){msg("mDel","Nuk u gjet punonjës me këtë emër.",false);return;}
+  save();render();
+  msg("mDel","✅ Rekordi u fshi me sukses.",true);
+  document.getElementById("dFirst").value="";document.getElementById("dLast").value="";
+};
+
+document.getElementById("doSearch").onclick=function(){
+  var f=val("sFirst"),l=val("sLast");
+  if(!f||!l){msg("mSearch","Ju lutem shkruani emrin dhe mbiemrin.",false);return;}
+  var found=data.filter(function(r){return norm(r[1])===norm(f)&&norm(r[2])===norm(l);});
+  if(found.length){
+    var r=found[0];
+    msg("mSearch","✅ U gjet: "+r[1]+" "+r[2]+" — "+r[3]+", "+r[4]+" (ID "+r[0]+").",true);
+  }else{
+    msg("mSearch","❌ Nuk ekziston rekord për këtë punonjës.",false);
+  }
+};
+
+load();render();
+</script>
+</body>
+</html>
